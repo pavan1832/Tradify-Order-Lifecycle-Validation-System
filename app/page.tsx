@@ -63,6 +63,7 @@ function OrderEntryForm() {
       price: form.orderType === 'LIMIT' ? Number(form.price) : undefined,
       strategy: form.strategy,
       state: 'CREATED',
+      riskScore: 0,
       validationSteps: [],
       transitions: [{ from: 'CREATED', to: 'CREATED', timestamp: now, note: 'Order entered into system' }],
       createdAt: now,
