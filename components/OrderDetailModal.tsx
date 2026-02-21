@@ -1,7 +1,7 @@
 "use client";
 // components/OrderDetailModal.tsx
 import { StateBadge } from "./StateBadge";
-import type { Order } from "@/store/slices/ordersSlice";
+import type { Order } from "@/lib/types";
 import type { OrderState } from "@/lib/validationEngine";
 
 const STATE_ORDER: OrderState[] = [
