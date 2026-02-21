@@ -195,7 +195,7 @@ export function OrderDetailModal({ order, onClose }: { order: Order; onClose: ()
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
                     <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)" }}>
-                      {step.name}
+                      {step.rule}
                     </span>
                     <span style={{
                       fontSize: 10,
