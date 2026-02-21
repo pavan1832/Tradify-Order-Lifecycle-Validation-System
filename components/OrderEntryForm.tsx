@@ -2,7 +2,7 @@
 // components/OrderEntryForm.tsx
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { submitOrder, clearError } from "@/store/slices/ordersSlice";
+import { addOrder } from "@/store/slices/ordersSlice";
 import type { OrderInput } from "@/lib/validationEngine";
 
 const INSTRUMENTS = ["INDEX", "FUTURES", "EQUITY"] as const;
