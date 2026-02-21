@@ -5,7 +5,7 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { removeOrder } from "@/store/slices/ordersSlice";
 import { StateBadge } from "./StateBadge";
 import { OrderDetailModal } from "./OrderDetailModal";
-import type { Order } from "@/store/slices/ordersSlice";
+import type { Order } from "@/lib/types";
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString("en-US", {
