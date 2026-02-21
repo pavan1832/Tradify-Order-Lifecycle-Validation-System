@@ -214,9 +214,7 @@ export function OrderDetailModal({ order, onClose }: { order: Order; onClose: ()
 >
   {step.detail}
 </p>
-                  <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4 }}>
-                    {formatDateTime(step.timestamp)}
-                  </div>
+                  
                 </div>
               ))}
             </div>
