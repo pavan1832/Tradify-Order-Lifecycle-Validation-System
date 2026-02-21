@@ -1,18 +1,19 @@
 "use client";
-// components/OrderEntryForm.tsx
+
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppDispatch } from "@/store/hooks";
 import { addOrder } from "@/store/slices/ordersSlice";
-import type { OrderInput } from "@/lib/validationEngine";
+import { v4 as uuidv4 } from "uuid";
+import type { Order } from "@/lib/types";
 
 const INSTRUMENTS = ["INDEX", "FUTURES", "EQUITY"] as const;
 const ORDER_TYPES = ["MARKET", "LIMIT"] as const;
 const STRATEGIES = [
-  "DELTA-NEUTRAL",
+  "DELTA_NEUTRAL",
   "MOMENTUM",
   "ARBITRAGE",
-  "MEAN-REVERSION",
-  "TREND-FOLLOWING",
+  "MEAN_REVERSION",
+  "CUSTOM",
 ] as const;
 
 const INSTRUMENT_PRESETS: Record<string, { qty: number; price: number }> = {
@@ -23,28 +24,20 @@ const INSTRUMENT_PRESETS: Record<string, { qty: number; price: number }> = {
 
 export function OrderEntryForm() {
   const dispatch = useAppDispatch();
-  const { submitting, error } = useAppSelector((s) => s.orders);
 
-  const [form, setForm] = useState<{
-    instrument: typeof INSTRUMENTS[number];
-    orderType: typeof ORDER_TYPES[number];
-    quantity: string;
-    price: string;
-    strategy: typeof STRATEGIES[number];
-  }>({
-    instrument: "INDEX",
-    orderType: "LIMIT",
+  const [form, setForm] = useState({
+    instrument: "INDEX" as typeof INSTRUMENTS[number],
+    orderType: "LIMIT" as typeof ORDER_TYPES[number],
     quantity: "10",
     price: "5400",
-    strategy: "DELTA-NEUTRAL",
+    strategy: "DELTA_NEUTRAL" as typeof STRATEGIES[number],
   });
 
-  function update<K extends keyof typeof form>(key: K, val: typeof form[K]) {
-    if (error) dispatch(clearError());
+  function update<K extends keyof typeof form>(key: K, value: typeof form[K]) {
     setForm((prev) => {
-      const next = { ...prev, [key]: val };
+      const next = { ...prev, [key]: value };
       if (key === "instrument") {
-        const preset = INSTRUMENT_PRESETS[val as string];
+        const preset = INSTRUMENT_PRESETS[value as string];
         next.quantity = String(preset.qty);
         next.price = String(preset.price);
       }
@@ -52,47 +45,73 @@ export function OrderEntryForm() {
     });
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const input: OrderInput = {
+
+    const now = new Date().toISOString();
+
+    const order: Order = {
+      id: uuidv4(),
       instrument: form.instrument,
       orderType: form.orderType,
       quantity: Number(form.quantity),
+      price: form.orderType === "LIMIT" ? Number(form.price) : undefined,
       strategy: form.strategy,
-      ...(form.orderType === "LIMIT" && form.price
-        ? { price: Number(form.price) }
-        : {}),
+      state: "CREATED",
+      validationSteps: [],
+      transitions: [],
+      riskScore: Math.floor(Math.random() * 100),
+      createdAt: now,
     };
-    dispatch(submitOrder(input));
+
+    dispatch(addOrder(order));
   }
 
   const isLimit = form.orderType === "LIMIT";
 
   return (
-    <aside style={{ 
-      width: 280, 
-      flexShrink: 0,
-      borderRight: "1px solid var(--border)",
-      display: "flex",
-      flexDirection: "column"
-    }}>
-      {/* Header */}
-      <div style={{ 
-        padding: "14px 16px", 
-        borderBottom: "1px solid var(--border)",
+    <aside
+      style={{
+        width: 280,
+        flexShrink: 0,
+        borderRight: "1px solid var(--border)",
         display: "flex",
-        alignItems: "center",
-        gap: 8
-      }}>
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M7 1v12M1 7h12" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round"/>
-        </svg>
-        <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-secondary)" }}>
+        flexDirection: "column",
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          padding: "14px 16px",
+          borderBottom: "1px solid var(--border)",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "var(--text-secondary)",
+          }}
+        >
           New Order Entry
         </span>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          padding: 16,
+          display: "flex",
+          flexDirection: "column",
+          gap: 14,
+          flex: 1,
+        }}
+      >
         {/* Instrument */}
         <div>
           <label className="tf-label">Instrument</label>
@@ -102,21 +121,8 @@ export function OrderEntryForm() {
                 key={inst}
                 type="button"
                 onClick={() => update("instrument", inst)}
-                style={{
-                  flex: 1,
-                  padding: "7px 0",
-                  fontSize: 11,
-                  fontFamily: "var(--font-mono)",
-                  fontWeight: 600,
-                  letterSpacing: "0.06em",
-                  border: "1px solid",
-                  borderRadius: 2,
-                  cursor: "pointer",
-                  transition: "all 0.15s",
-                  background: form.instrument === inst ? "rgba(0,212,255,0.12)" : "var(--bg)",
-                  borderColor: form.instrument === inst ? "var(--accent)" : "var(--border)",
-                  color: form.instrument === inst ? "var(--accent)" : "var(--text-muted)",
-                }}
+                className="tf-toggle"
+                data-active={form.instrument === inst}
               >
                 {inst}
               </button>
@@ -133,21 +139,8 @@ export function OrderEntryForm() {
                 key={ot}
                 type="button"
                 onClick={() => update("orderType", ot)}
-                style={{
-                  flex: 1,
-                  padding: "7px 0",
-                  fontSize: 11,
-                  fontFamily: "var(--font-mono)",
-                  fontWeight: 600,
-                  letterSpacing: "0.06em",
-                  border: "1px solid",
-                  borderRadius: 2,
-                  cursor: "pointer",
-                  transition: "all 0.15s",
-                  background: form.orderType === ot ? "rgba(0,212,255,0.12)" : "var(--bg)",
-                  borderColor: form.orderType === ot ? "var(--accent)" : "var(--border)",
-                  color: form.orderType === ot ? "var(--accent)" : "var(--text-muted)",
-                }}
+                className="tf-toggle"
+                data-active={form.orderType === ot}
               >
                 {ot}
               </button>
@@ -157,7 +150,7 @@ export function OrderEntryForm() {
 
         {/* Quantity */}
         <div>
-          <label className="tf-label">Quantity (lots)</label>
+          <label className="tf-label">Quantity</label>
           <input
             className="tf-input"
             type="number"
@@ -179,85 +172,44 @@ export function OrderEntryForm() {
               step={0.01}
               value={form.price}
               onChange={(e) => update("price", e.target.value)}
-              required={isLimit}
+              required
             />
           </div>
         )}
 
         {/* Strategy */}
         <div>
-          <label className="tf-label">Strategy Tag</label>
+          <label className="tf-label">Strategy</label>
           <select
             className="tf-select"
             value={form.strategy}
-            onChange={(e) => update("strategy", e.target.value as typeof form.strategy)}
+            onChange={(e) =>
+              update("strategy", e.target.value as typeof form.strategy)
+            }
           >
             {STRATEGIES.map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>
+                {s}
+              </option>
             ))}
           </select>
         </div>
 
-        {/* Notional preview */}
-        {isLimit && form.price && form.quantity && (
-          <div style={{ 
-            background: "var(--bg)", 
-            border: "1px solid var(--border)", 
-            borderRadius: 2, 
-            padding: "8px 10px",
-            fontSize: 11
-          }}>
-            <div style={{ color: "var(--text-muted)", marginBottom: 2 }}>NOTIONAL EXPOSURE</div>
-            <div style={{ color: "var(--amber)", fontWeight: 600 }}>
-              ${(Number(form.quantity) * Number(form.price)).toLocaleString()}
-            </div>
-          </div>
-        )}
-
-        {/* Error */}
-        {error && (
-          <div style={{ 
-            background: "rgba(255,75,75,0.08)", 
-            border: "1px solid rgba(255,75,75,0.3)",
-            borderRadius: 2,
-            padding: "8px 10px",
-            fontSize: 11,
-            color: "var(--red)"
-          }}>
-            {error}
-          </div>
-        )}
-
         {/* Submit */}
-        <button
-          type="submit"
-          className="tf-btn"
-          disabled={submitting}
-          style={{ marginTop: "auto" }}
-        >
-          {submitting ? (
-            <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-              <svg width="12" height="12" viewBox="0 0 12 12" style={{ animation: "spin-slow 1s linear infinite" }}>
-                <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="20" strokeDashoffset="10" fill="none"/>
-              </svg>
-              VALIDATING...
-            </span>
-          ) : (
-            "SUBMIT ORDER →"
-          )}
+        <button type="submit" className="tf-btn" style={{ marginTop: "auto" }}>
+          SUBMIT ORDER →
         </button>
       </form>
 
-      {/* Footer note */}
-      <div style={{ 
-        padding: "10px 16px", 
-        borderTop: "1px solid var(--border)",
-        fontSize: 10,
-        color: "var(--text-muted)",
-        lineHeight: 1.5
-      }}>
-        Server-side validation via Node.js.<br/>
-        State managed by Redux Toolkit.
+      <div
+        style={{
+          padding: "10px 16px",
+          borderTop: "1px solid var(--border)",
+          fontSize: 10,
+          color: "var(--text-muted)",
+        }}
+      >
+        Local validation • Redux Toolkit state
       </div>
     </aside>
   );
