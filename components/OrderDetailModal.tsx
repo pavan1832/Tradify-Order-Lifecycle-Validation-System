@@ -194,21 +194,30 @@ export function OrderDetailModal({ order, onClose }: { order: Order; onClose: ()
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)" }}>
-                      {step.rule}
-                    </span>
-                    <span style={{
-                      fontSize: 10,
-                      fontWeight: 600,
-                      letterSpacing: "0.08em",
-                      color: step.passed ? "var(--green)" : "var(--red)"
-                    }}>
-                      {step.passed ? "✓ PASS" : "✗ FAIL"}
-                    </span>
-                  </div>
-                  <p style={{ fontSize: 11, color: step.passed ? "var(--text-muted)" : "var(--red)", opacity: step.passed ? 1 : 0.85 }}>
-                    {step.message}
-                  </p>
+  <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)" }}>
+    {step.check}
+  </span>
+  <span
+    style={{
+      fontSize: 10,
+      fontWeight: 600,
+      letterSpacing: "0.08em",
+      color: step.passed ? "var(--green)" : "var(--red)",
+    }}
+  >
+    {step.passed ? "✓ PASS" : "✗ FAIL"}
+  </span>
+</div>
+
+<p
+  style={{
+    fontSize: 11,
+    color: step.passed ? "var(--text-muted)" : "var(--red)",
+    opacity: step.passed ? 1 : 0.85,
+  }}
+>
+  {step.detail}
+</p>
                   <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4 }}>
                     {formatDateTime(step.timestamp)}
                   </div>
