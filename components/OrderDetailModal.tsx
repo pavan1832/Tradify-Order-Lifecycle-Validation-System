@@ -2,7 +2,7 @@
 // components/OrderDetailModal.tsx
 import { StateBadge } from "./StateBadge";
 import type { Order } from "@/lib/types";
-import type { OrderState } from "@/lib/validationEngine";
+import type { OrderState } from "@/lib/types";
 
 const STATE_ORDER: OrderState[] = [
   "CREATED",
