@@ -166,9 +166,9 @@ export function OrderDetailModal({ order, onClose }: { order: Order; onClose: ()
                             {formatDateTime(transitionTo.timestamp)}
                           </div>
                         )}
-                        {transitionTo?.reason && (
+                        {transitionTo?.note && (
                           <div style={{ fontSize: 11, color: "var(--red)", marginTop: 2 }}>
-                            {transitionTo.reason}
+                            {transitionTo.note}
                           </div>
                         )}
                       </div>
