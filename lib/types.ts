@@ -27,6 +27,7 @@ export interface Order {
   rejectionReason?: string
   validationSteps: ValidationStep[]
   transitions: StateTransition[]
+  riskScore: number
   createdAt: string
 }
 
