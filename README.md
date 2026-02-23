@@ -4,6 +4,8 @@
 
 A frontend-centric simulation of how trade orders move through validation, risk checks, and execution readiness in a derivatives trading environment.
 
+The project is live here: https://tradify-order-lifecycle-validation.vercel.app/
+
 ---
 
 ## What It Does
